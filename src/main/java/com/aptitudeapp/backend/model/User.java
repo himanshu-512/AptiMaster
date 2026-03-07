@@ -3,6 +3,7 @@ package com.aptitudeapp.backend.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -30,8 +31,12 @@ public class User {
     // Practice statistics
     private int totalQuestions = 0;
     private int totalCorrect = 0;
-    private int globalScore = 0;
-
+    @Indexed
+    private int globalScore;
+    @Indexed
+    private int weeklyScore = 0;
+    @Indexed
+    private int dailyScore = 0;
     // Streak system
     private int streak = 0;
 

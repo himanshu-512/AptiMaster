@@ -17,12 +17,9 @@ public class AttemptService {
     private final QuestionRepository questionRepository;
     private final AttemptRepository attemptRepository;
     private final UserRepository userRepository;
-//    private final StringRedisTemplate redisTemplate;
     private final UserService userService;
 
     public ResultResponse submitAttempt(AttemptSubmissionRequest request) {
-        System.out.println("REQUEST RECEIVED");
-        System.out.println(request);
 
         String userId =
                 SecurityContextHolder.getContext()
@@ -74,26 +71,20 @@ public class AttemptService {
 
         int finalCorrectCount = correctCount;
 
-        // Update user stats + streak
         userRepository.findById(userId).ifPresent(user -> {
 
             user.setTotalQuestions(user.getTotalQuestions() + total);
             user.setTotalCorrect(user.getTotalCorrect() + finalCorrectCount);
-            user.setGlobalScore(user.getGlobalScore() + score);
 
-            // ⭐ Update streak
+            user.setGlobalScore(user.getGlobalScore() + score);
+            user.setWeeklyScore(user.getWeeklyScore() + score);
+            user.setDailyScore(user.getDailyScore() + score);
+
             userService.updateUserStreak(user);
 
             userRepository.save(user);
         });
 
-        // Update leaderboard
-//        try {
-//            redisTemplate.opsForZSet()
-//                    .incrementScore("leaderboard:global", userId, score);
-//        } catch (Exception e) {
-//            System.out.println("Redis connection failed: " + e.getMessage());
-//        }
         double accuracy = (double) correctCount / total * 100;
 
         return new ResultResponse(
