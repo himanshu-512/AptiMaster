@@ -11,6 +11,7 @@ public class QuestionResponse {
 
     private String id;
     private String topic;
+    private String subtopic;
     private String difficulty;
     private String questionText;
     private List<String> options;

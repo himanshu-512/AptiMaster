@@ -26,6 +26,9 @@ public class AnalyticsService {
 
         List<Attempt> attempts;
 
+        // -----------------------------
+        // FILTER BASED ON PERIOD
+        // -----------------------------
         if (period.equals("30")) {
             attempts = attemptRepository
                     .findByUserIdAndAttemptedAtAfter(
@@ -54,33 +57,57 @@ public class AnalyticsService {
                 ? 0
                 : ((double) correct / total) * 100;
 
-        // -----------------------------
-        // Daily trend
-        // -----------------------------
+        // =========================================================
+        // 🔥 WEEKLY TREND (LAST 7 DAYS - ACCURACY BASED)
+        // =========================================================
 
-        Map<LocalDate, Integer> trendMap = new TreeMap<>();
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.minusDays(6);
+
+        Map<LocalDate, Integer> totalMap = new HashMap<>();
+        Map<LocalDate, Integer> correctMap = new HashMap<>();
 
         for (Attempt attempt : attempts) {
 
-            LocalDate date =
-                    attempt.getAttemptedAt().toLocalDate();
+            LocalDate date = attempt.getAttemptedAt().toLocalDate();
 
-            trendMap.put(
-                    date,
-                    trendMap.getOrDefault(date, 0) + 1
-            );
+            if (!date.isBefore(start)) {
+
+                totalMap.put(
+                        date,
+                        totalMap.getOrDefault(date, 0) + 1
+                );
+
+                if (attempt.isCorrect()) {
+                    correctMap.put(
+                            date,
+                            correctMap.getOrDefault(date, 0) + 1
+                    );
+                }
+            }
         }
 
         List<Integer> trend = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
-        for (Map.Entry<LocalDate, Integer> entry : trendMap.entrySet()) {
-            trend.add(entry.getValue());
-            labels.add(entry.getKey().getDayOfWeek().name().substring(0,3));
+        for (int i = 0; i < 7; i++) {
+
+            LocalDate day = start.plusDays(i);
+
+            int totalDay = totalMap.getOrDefault(day, 0);
+            int correctDay = correctMap.getOrDefault(day, 0);
+
+            int acc = totalDay == 0
+                    ? 0
+                    : (int) ((correctDay * 100.0) / totalDay);
+
+            trend.add(acc);
+
+            labels.add(day.getDayOfWeek().name().substring(0, 3));
         }
 
         // -----------------------------
-        // Topic Accuracy
+        // TOPIC ACCURACY
         // -----------------------------
 
         Map<String, Integer> topicTotal = new HashMap<>();
@@ -108,7 +135,7 @@ public class AnalyticsService {
         double verbal = calculateAccuracy(topicTotal, topicCorrect, "Verbal Ability");
 
         // -----------------------------
-        // Weak Topic
+        // WEAK TOPIC
         // -----------------------------
 
         String weakTopic = null;
@@ -125,7 +152,7 @@ public class AnalyticsService {
         }
 
         // -----------------------------
-        // Average Time
+        // AVERAGE TIME
         // -----------------------------
 
         int avgTime = attempts.isEmpty()
@@ -138,8 +165,8 @@ public class AnalyticsService {
         return new AnalyticsResponse(
                 total,
                 accuracy,
-                trend,
-                labels,
+                trend,     // 🔥 THIS is your weekly chart data
+                labels,    // 🔥 MON, TUE, ...
                 quant,
                 reasoning,
                 verbal,
@@ -149,16 +176,16 @@ public class AnalyticsService {
     }
 
     private double calculateAccuracy(
-            Map<String,Integer> total,
-            Map<String,Integer> correct,
+            Map<String, Integer> total,
+            Map<String, Integer> correct,
             String topic
-    ){
+    ) {
 
-        int t = total.getOrDefault(topic,0);
-        int c = correct.getOrDefault(topic,0);
+        int t = total.getOrDefault(topic, 0);
+        int c = correct.getOrDefault(topic, 0);
 
-        if(t == 0) return 0;
+        if (t == 0) return 0;
 
-        return ((double)c/t)*100;
+        return ((double) c / t) * 100;
     }
 }

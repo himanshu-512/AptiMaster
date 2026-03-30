@@ -13,5 +13,5 @@ public interface AttemptRepository extends MongoRepository<Attempt, String> {
             String userId,
             LocalDateTime date
     );
-
+//    List<Attempt> findByUserId(String userId);
 }
