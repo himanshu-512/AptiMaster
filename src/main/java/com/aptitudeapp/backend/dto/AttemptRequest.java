@@ -9,5 +9,5 @@ public class AttemptRequest {
 
     private String questionId;
     private int selectedAnswer;
-    private int timeTaken;
+    private Integer timeSpent; // ✅ ADD THIS
 }

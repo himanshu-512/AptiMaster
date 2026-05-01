@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getId())
                 .password("") // Not needed for OTP
-                .authorities("USER")
+                .authorities(user.getRole().name())
                 .build();
     }
 }

@@ -34,6 +34,8 @@ public class UserService {
                 .totalQuestions(user.getTotalQuestions())
                 .totalCorrect(user.getTotalCorrect())
                 .globalScore(user.getGlobalScore())
+                .xp(user.getXp())
+                .level(user.getLevel())
                 .streak(user.getStreak())
                 .accuracy(accuracy)
                 .build();

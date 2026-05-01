@@ -10,23 +10,14 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Document(collection = "attempts")
-@CompoundIndex(name = "user_attempt_index", def = "{'userId': 1, 'attemptedAt': -1}")
-public class Attempt {
+@Document(collection = "bookmarks")
+@CompoundIndex(name = "user_question_bookmark", def = "{'userId': 1, 'questionId': 1}", unique = true)
+public class Bookmark {
 
     @Id
     private String id;
 
     private String userId;
     private String questionId;
-
-    private int selectedAnswer;
-    private boolean correct;
-
-    private String topic;
-    private String difficulty;
-
-    private Integer timeSpent; // ✅ minutes
-
-    private LocalDateTime attemptedAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

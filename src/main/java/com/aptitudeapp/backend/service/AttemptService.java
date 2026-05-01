@@ -21,6 +21,10 @@ public class AttemptService {
 
     public ResultResponse submitAttempt(AttemptSubmissionRequest request) {
 
+        if (request == null || request.getAttempts() == null || request.getAttempts().isEmpty()) {
+            throw new IllegalArgumentException("At least one attempt is required");
+        }
+
         String userId =
                 SecurityContextHolder.getContext()
                         .getAuthentication()
@@ -47,8 +51,13 @@ public class AttemptService {
 
             Question question = questionMap.get(dto.getQuestionId());
 
+            if (question == null) {
+                throw new IllegalArgumentException("Invalid question id: " + dto.getQuestionId());
+            }
+
             boolean isCorrect =
-                    question.getCorrectAnswer() == dto.getSelectedAnswer();
+                    dto.getSelectedAnswer() >= 0
+                            && question.getCorrectAnswer() == dto.getSelectedAnswer();
 
             if (isCorrect) correctCount++;
 
@@ -59,7 +68,7 @@ public class AttemptService {
             attempt.setCorrect(isCorrect);
             attempt.setTopic(question.getTopic());
             attempt.setDifficulty(question.getDifficulty().name());
-            attempt.setTimeTaken(dto.getTimeTaken());
+            attempt.setTimeSpent(dto.getTimeSpent());
 
             attemptEntities.add(attempt);
         }
@@ -79,13 +88,15 @@ public class AttemptService {
             user.setGlobalScore(user.getGlobalScore() + score);
             user.setWeeklyScore(user.getWeeklyScore() + score);
             user.setDailyScore(user.getDailyScore() + score);
+            user.setXp(user.getXp() + score);
+            user.setLevel((user.getXp() / 500) + 1);
 
             userService.updateUserStreak(user);
 
             userRepository.save(user);
         });
 
-        double accuracy = (double) correctCount / total * 100;
+        double accuracy = total == 0 ? 0 : (double) correctCount / total * 100;
 
         return new ResultResponse(
                 total,

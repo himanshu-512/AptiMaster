@@ -34,5 +34,7 @@ public class Question {
 
     private String source;
 
+    private String contestId;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 }

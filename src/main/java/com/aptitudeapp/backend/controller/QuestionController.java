@@ -2,10 +2,9 @@ package com.aptitudeapp.backend.controller;
 
 import com.aptitudeapp.backend.dto.QuestionResponse;
 import com.aptitudeapp.backend.dto.TopicStatsDTO;
-import com.aptitudeapp.backend.model.Question;
-import com.aptitudeapp.backend.repository.QuestionRepository;
 import com.aptitudeapp.backend.service.QuestionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,18 +15,12 @@ import java.util.List;
 public class QuestionController {
 
     private final QuestionService questionService;
-    private final QuestionRepository questionRepository;
 
     // ✅ 1. GET ALL SUBTOPICS
     @GetMapping("/topics")
     public List<String> getSubtopics(@RequestParam String topic) {
 
-        List<Question> questions = questionRepository.findSubtopicsByTopic(topic);
-
-        return questions.stream()
-                .map(Question::getSubtopic)
-                .distinct()
-                .toList();
+        return questionService.getSubtopics(topic);
     }
 
     // ✅ 2. GET ALL QUESTIONS BY SUBTOPIC (MAIN API)
@@ -62,5 +55,29 @@ public class QuestionController {
             @RequestParam(defaultValue = "10") int count
     ) {
         return questionService.getRandomQuestions(count);
+    }
+
+    @GetMapping("/wrong")
+    public List<QuestionResponse> getWrongQuestions(
+            @RequestParam(defaultValue = "10") int count,
+            Authentication authentication
+    ) {
+        return questionService.getWrongQuestions(authentication.getName(), count);
+    }
+
+    @GetMapping("/bookmarked")
+    public List<QuestionResponse> getBookmarkedQuestions(
+            @RequestParam(defaultValue = "10") int count,
+            Authentication authentication
+    ) {
+        return questionService.getBookmarkedQuestions(authentication.getName(), count);
+    }
+
+    @GetMapping("/smart-practice")
+    public List<QuestionResponse> getSmartPracticeQuestions(
+            @RequestParam(defaultValue = "10") int count,
+            Authentication authentication
+    ) {
+        return questionService.getSmartPracticeQuestions(authentication.getName(), count);
     }
 }

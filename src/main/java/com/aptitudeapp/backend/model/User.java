@@ -28,21 +28,36 @@ public class User {
 
     private String email;
 
-    // Practice statistics
+    // 📊 Practice statistics
     private int totalQuestions = 0;
     private int totalCorrect = 0;
+
     @Indexed
     private int globalScore;
+
     @Indexed
     private int weeklyScore = 0;
+
     @Indexed
     private int dailyScore = 0;
-    // Streak system
-    private int streak = 0;
 
+    // 🔥 Gamification
+    @Indexed
+    private int xp = 0;
+
+    private int level = 1;
+
+    // 🔥 Streak system
+    private int streak = 0;
     private LocalDate lastPracticeDate;
 
     private Role role = Role.USER;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // ✅ Derived field (no DB storage)
+    public double getAccuracy() {
+        if (totalQuestions == 0) return 0;
+        return (totalCorrect * 100.0) / totalQuestions;
+    }
 }

@@ -16,6 +16,8 @@ public class ProfileResponse {
     private int totalQuestions;
     private int totalCorrect;
     private int globalScore;
+    private int xp;
+    private int level;
     private int streak;
 
     private double accuracy;

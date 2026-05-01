@@ -41,9 +41,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/verify-otp").permitAll()
 
                         // Protected APIs
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/questions/**").authenticated()
                         .requestMatchers("/api/attempt/**").authenticated()
                         .requestMatchers("/api/analytics/**").authenticated()
+                        .requestMatchers("/api/bookmarks/**").authenticated()
+                        .requestMatchers("/api/contests/**").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/ai/**").authenticated()
                         .requestMatchers("/api/leaderboard/**").authenticated()

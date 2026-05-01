@@ -1,6 +1,7 @@
 package com.aptitudeapp.backend.service;
 
 import com.aptitudeapp.backend.dto.AnalyticsResponse;
+import com.aptitudeapp.backend.dto.DailyProgressResponse;
 import com.aptitudeapp.backend.model.Attempt;
 import com.aptitudeapp.backend.repository.AttemptRepository;
 import lombok.RequiredArgsConstructor;
@@ -131,6 +132,9 @@ public class AnalyticsService {
         }
 
         double quant = calculateAccuracy(topicTotal, topicCorrect, "Quantitative");
+        if (quant == 0) {
+            quant = calculateAccuracy(topicTotal, topicCorrect, "Quantitative Aptitude");
+        }
         double reasoning = calculateAccuracy(topicTotal, topicCorrect, "Logical Reasoning");
         double verbal = calculateAccuracy(topicTotal, topicCorrect, "Verbal Ability");
 
@@ -158,7 +162,7 @@ public class AnalyticsService {
         int avgTime = attempts.isEmpty()
                 ? 0
                 : (int) attempts.stream()
-                .mapToInt(Attempt::getTimeTaken)
+                .mapToInt(a -> a.getTimeSpent() != null ? a.getTimeSpent() : 0)
                 .average()
                 .orElse(0);
 
@@ -187,5 +191,29 @@ public class AnalyticsService {
         if (t == 0) return 0;
 
         return ((double) c / t) * 100;
+    }
+    public DailyProgressResponse getDailyProgress(String userId) {
+
+        int goal = 60;
+
+        // ✅ today start & end
+        LocalDateTime start = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime end = LocalDateTime.now().toLocalDate().atTime(23, 59, 59);
+
+        List<Attempt> attempts =
+                attemptRepository.findByUserIdAndAttemptedAtBetween(userId, start, end);
+
+        // ✅ अगर timeSpent field है
+        int minutes = attempts.stream()
+                .mapToInt(a -> a.getTimeSpent() != null ? a.getTimeSpent() : 0)
+                .sum();
+
+        // ❗ अगर timeSpent नहीं है:
+        // int minutes = attempts.size() * 2;
+
+        int percent = (int) ((minutes * 100.0) / goal);
+        if (percent > 100) percent = 100;
+
+        return new DailyProgressResponse(minutes, goal, percent);
     }
 }
