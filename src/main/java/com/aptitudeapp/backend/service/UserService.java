@@ -31,6 +31,12 @@ public class UserService {
                 .age(user.getAge())
                 .avatar(user.getAvatar())
                 .email(user.getEmail())
+                .profileComplete(user.isProfileComplete())
+                .firstLogin(user.isFirstLogin())
+                .examGoal(user.getExamGoal())
+                .target(user.getTarget())
+                .dailyGoal(user.getDailyGoal())
+                .preferredTopics(user.getPreferredTopics())
                 .totalQuestions(user.getTotalQuestions())
                 .totalCorrect(user.getTotalCorrect())
                 .globalScore(user.getGlobalScore())
@@ -57,6 +63,23 @@ public class UserService {
 
         if (request.getEmail() != null)
             user.setEmail(request.getEmail());
+
+        if (request.getExamGoal() != null)
+            user.setExamGoal(request.getExamGoal());
+
+        if (request.getTarget() != null)
+            user.setTarget(request.getTarget());
+
+        if (request.getDailyGoal() != null)
+            user.setDailyGoal(request.getDailyGoal());
+
+        if (request.getPreferredTopics() != null)
+            user.setPreferredTopics(request.getPreferredTopics());
+
+        if (hasText(user.getName())) {
+            user.setProfileComplete(true);
+            user.setFirstLogin(false);
+        }
 
         userRepository.save(user);
 
@@ -85,5 +108,9 @@ public class UserService {
         }
 
         user.setLastPracticeDate(today);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,6 +28,13 @@ public class User {
     private String avatar;
 
     private String email;
+
+    private boolean profileComplete = false;
+    private boolean firstLogin = true;
+    private String examGoal;
+    private String target;
+    private Integer dailyGoal;
+    private List<String> preferredTopics;
 
     // 📊 Practice statistics
     private int totalQuestions = 0;

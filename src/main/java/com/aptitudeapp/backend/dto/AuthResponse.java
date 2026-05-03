@@ -12,4 +12,6 @@ public class AuthResponse {
     private String Token;
     private String userId;
     private String message;
+    private boolean profileComplete;
+    private boolean firstLogin;
 }

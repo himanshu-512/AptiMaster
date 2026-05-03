@@ -2,5 +2,6 @@ package com.aptitudeapp.backend.model;
 
 public enum Role {
     USER,
-    ADMIN
+    ADMIN,
+    CANDIDATE
 }

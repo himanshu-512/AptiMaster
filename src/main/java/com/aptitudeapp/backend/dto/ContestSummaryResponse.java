@@ -17,4 +17,6 @@ public class ContestSummaryResponse {
     private int durationMinutes;
     private int totalQuestions;
     private String status;
+    private boolean registered;
+    private long registeredUsers;
 }

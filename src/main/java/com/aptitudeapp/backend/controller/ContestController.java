@@ -17,9 +17,18 @@ public class ContestController {
 
     @GetMapping
     public List<ContestSummaryResponse> list(
-            @RequestParam(defaultValue = "upcoming") String type
+            @RequestParam(defaultValue = "upcoming") String type,
+            Authentication authentication
     ) {
-        return contestService.list(type);
+        return contestService.list(type, authentication.getName());
+    }
+
+    @PostMapping("/{contestId}/register")
+    public ContestRegistrationResponse register(
+            @PathVariable String contestId,
+            Authentication authentication
+    ) {
+        return contestService.register(contestId, authentication.getName());
     }
 
     @GetMapping("/{contestId}")

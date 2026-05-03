@@ -73,6 +73,12 @@ public class OtpService {
 
         String token = jwtTokenProvider.generateToken(user.getId());
 
-        return new AuthResponse(token, user.getId(), "Login successful");
+        return new AuthResponse(
+                token,
+                user.getId(),
+                "Login successful",
+                user.isProfileComplete(),
+                user.isFirstLogin()
+        );
     }
 }

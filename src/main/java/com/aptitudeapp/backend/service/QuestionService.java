@@ -1,6 +1,7 @@
 package com.aptitudeapp.backend.service;
 
 import com.aptitudeapp.backend.dto.QuestionResponse;
+import com.aptitudeapp.backend.dto.PracticeRequest;
 import com.aptitudeapp.backend.dto.TopicStatsDTO;
 import com.aptitudeapp.backend.model.Attempt;
 import com.aptitudeapp.backend.model.Bookmark;
@@ -146,6 +147,40 @@ public class QuestionService {
             }
         } else {
             questions = findQuestionsByTopicFlexible(topic);
+        }
+
+        Collections.shuffle(questions);
+
+        if (questions.size() > safeCount) {
+            questions = questions.subList(0, safeCount);
+        }
+
+        return questions.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<QuestionResponse> getPracticeQuestions(PracticeRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Practice request is required");
+        }
+
+        int safeCount = Math.max(1, Math.min(request.getCount() > 0 ? request.getCount() : 10, 50));
+        List<Question> questions;
+
+        if (request.getSubtopic() != null && !request.getSubtopic().isBlank()) {
+            questions = questionRepository.findBySubtopicIgnoreCase(request.getSubtopic().trim());
+        } else if (request.getTopic() != null && !request.getTopic().isBlank()) {
+            questions = findQuestionsByTopicFlexible(request.getTopic());
+        } else {
+            questions = questionRepository.findAll();
+        }
+
+        if (request.getDifficulty() != null && !request.getDifficulty().isBlank()) {
+            Difficulty parsedDifficulty = Difficulty.valueOf(request.getDifficulty().toUpperCase());
+            questions = questions.stream()
+                    .filter(q -> q.getDifficulty() == parsedDifficulty)
+                    .collect(Collectors.toList());
         }
 
         Collections.shuffle(questions);

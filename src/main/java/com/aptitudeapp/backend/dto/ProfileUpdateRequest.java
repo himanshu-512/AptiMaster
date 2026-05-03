@@ -1,11 +1,17 @@
 package com.aptitudeapp.backend.dto;
 
+import java.util.List;
+
 public class ProfileUpdateRequest {
 
     private String name;
     private Integer age;
     private String email;
     private String avatar;
+    private String examGoal;
+    private String target;
+    private Integer dailyGoal;
+    private List<String> preferredTopics;
 
     public ProfileUpdateRequest() {
     }
@@ -47,5 +53,37 @@ public class ProfileUpdateRequest {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getExamGoal() {
+        return examGoal;
+    }
+
+    public void setExamGoal(String examGoal) {
+        this.examGoal = examGoal;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public Integer getDailyGoal() {
+        return dailyGoal;
+    }
+
+    public void setDailyGoal(Integer dailyGoal) {
+        this.dailyGoal = dailyGoal;
+    }
+
+    public List<String> getPreferredTopics() {
+        return preferredTopics;
+    }
+
+    public void setPreferredTopics(List<String> preferredTopics) {
+        this.preferredTopics = preferredTopics;
     }
 }

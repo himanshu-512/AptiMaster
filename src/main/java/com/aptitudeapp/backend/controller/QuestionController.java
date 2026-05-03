@@ -1,6 +1,7 @@
 package com.aptitudeapp.backend.controller;
 
 import com.aptitudeapp.backend.dto.QuestionResponse;
+import com.aptitudeapp.backend.dto.PracticeRequest;
 import com.aptitudeapp.backend.dto.TopicStatsDTO;
 import com.aptitudeapp.backend.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,11 @@ public class QuestionController {
     @GetMapping("/by-subtopic")
     public List<QuestionResponse> getBySubtopic(@RequestParam String subtopic) {
         return questionService.getQuestionsBySubtopic(subtopic);
+    }
+
+    @PostMapping("/by-subtopic")
+    public List<QuestionResponse> getPracticeQuestions(@RequestBody PracticeRequest request) {
+        return questionService.getPracticeQuestions(request);
     }
 
     @GetMapping("/all")

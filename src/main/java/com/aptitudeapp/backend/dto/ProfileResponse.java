@@ -12,6 +12,12 @@ public class ProfileResponse {
     private Integer age;
     private String avatar;
     private String email;
+    private boolean profileComplete;
+    private boolean firstLogin;
+    private String examGoal;
+    private String target;
+    private Integer dailyGoal;
+    private java.util.List<String> preferredTopics;
 
     private int totalQuestions;
     private int totalCorrect;

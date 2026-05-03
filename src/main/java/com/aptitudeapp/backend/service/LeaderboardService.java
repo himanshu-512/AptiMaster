@@ -1,9 +1,12 @@
 package com.aptitudeapp.backend.service;
 
 import com.aptitudeapp.backend.dto.LeaderboardEntry;
+import com.aptitudeapp.backend.model.Role;
 import com.aptitudeapp.backend.model.User;
 import com.aptitudeapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -15,23 +18,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LeaderboardService {
 
+    private static final Logger logger = LoggerFactory.getLogger(LeaderboardService.class);
+
     private final UserRepository userRepository;
 
-    // GLOBAL LEADERBOARD
+    // GLOBAL
     public List<LeaderboardEntry> getGlobalLeaderboard(int page, int limit) {
-
+        logger.info("➡️ Global leaderboard called");
         return getLeaderboard(page, limit, "globalScore");
     }
 
-    // DAILY LEADERBOARD
+    // DAILY
     public List<LeaderboardEntry> getDailyLeaderboard(int page, int limit) {
-
+        logger.info("➡️ Daily leaderboard called");
         return getLeaderboard(page, limit, "dailyScore");
     }
 
-    // WEEKLY LEADERBOARD
+    // WEEKLY
     public List<LeaderboardEntry> getWeeklyLeaderboard(int page, int limit) {
-
+        logger.info("➡️ Weekly leaderboard called");
         return getLeaderboard(page, limit, "weeklyScore");
     }
 
@@ -42,32 +47,34 @@ public class LeaderboardService {
             String scoreField
     ) {
 
+        logger.info("📊 Fetching leaderboard | page={} limit={} field={}", page, limit, scoreField);
+
         PageRequest pageable = PageRequest.of(
                 page,
                 limit,
                 Sort.by(Sort.Direction.DESC, scoreField)
+                        .and(Sort.by(Sort.Direction.ASC, "createdAt"))
         );
 
-        List<User> users =
-                userRepository.findAll(pageable).getContent();
+        // 🔥 ONLY NORMAL USERS
+        List<User> users = userRepository
+                .findByRole(Role.USER, pageable)
+                .getContent();
 
-        List<LeaderboardEntry> leaderboard =
-                new ArrayList<>();
+        logger.info("✅ Users fetched (USER only): {}", users.size());
+
+        List<LeaderboardEntry> leaderboard = new ArrayList<>();
 
         int rank = page * limit + 1;
 
         for (User user : users) {
 
-            int points = 0;
-
-            if (scoreField.equals("globalScore"))
-                points = user.getGlobalScore();
-
-            if (scoreField.equals("dailyScore"))
-                points = user.getDailyScore();
-
-            if (scoreField.equals("weeklyScore"))
-                points = user.getWeeklyScore();
+            int points = switch (scoreField) {
+                case "globalScore" -> user.getGlobalScore();
+                case "dailyScore" -> user.getDailyScore();
+                case "weeklyScore" -> user.getWeeklyScore();
+                default -> 0;
+            };
 
             leaderboard.add(
                     new LeaderboardEntry(
@@ -83,18 +90,28 @@ public class LeaderboardService {
         return leaderboard;
     }
 
-    // USER RANK (GLOBAL)
+    // USER RANK
     public long getUserRank(String userId) {
 
+        logger.info("🔍 Getting rank for userId={}", userId);
+
         User user = userRepository.findById(userId)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         long higherScores = userRepository
                 .countByGlobalScoreGreaterThan(user.getGlobalScore());
 
-        return higherScores + 1;
+        long rank = higherScores + 1;
+
+        logger.info("🏆 Rank = {}", rank);
+
+        return rank;
     }
+
+    // SEARCH
     public List<LeaderboardEntry> searchUser(String query) {
+
+        logger.info("🔎 Searching users: {}", query);
 
         List<User> users = userRepository
                 .findByNameContainingIgnoreCase(query);
@@ -118,6 +135,8 @@ public class LeaderboardService {
                     )
             );
         }
+
+        logger.info("✅ Search result count: {}", result.size());
 
         return result;
     }

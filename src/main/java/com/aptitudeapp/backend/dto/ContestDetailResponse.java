@@ -20,5 +20,7 @@ public class ContestDetailResponse {
     private String status;
     private long serverTime;
     private boolean submitted;
+    private boolean registered;
+    private long registeredUsers;
     private List<ContestQuestionResponse> questions;
 }

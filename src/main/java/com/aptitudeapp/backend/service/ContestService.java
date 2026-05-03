@@ -2,10 +2,12 @@ package com.aptitudeapp.backend.service;
 
 import com.aptitudeapp.backend.dto.*;
 import com.aptitudeapp.backend.model.Contest;
+import com.aptitudeapp.backend.model.ContestRegistration;
 import com.aptitudeapp.backend.model.ContestSubmission;
 import com.aptitudeapp.backend.model.Question;
 import com.aptitudeapp.backend.model.User;
 import com.aptitudeapp.backend.repository.ContestRepository;
+import com.aptitudeapp.backend.repository.ContestRegistrationRepository;
 import com.aptitudeapp.backend.repository.ContestSubmissionRepository;
 import com.aptitudeapp.backend.repository.QuestionRepository;
 import com.aptitudeapp.backend.repository.UserRepository;
@@ -23,10 +25,11 @@ public class ContestService {
 
     private final ContestRepository contestRepository;
     private final ContestSubmissionRepository submissionRepository;
+    private final ContestRegistrationRepository registrationRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
 
-    public List<ContestSummaryResponse> list(String type) {
+    public List<ContestSummaryResponse> list(String type, String userId) {
         LocalDateTime now = LocalDateTime.now();
         List<Contest> contests;
 
@@ -39,12 +42,13 @@ public class ContestService {
             contests = contestRepository.findByStartTimeAfterOrderByStartTimeAsc(now);
         }
 
-        return contests.stream().map(this::toSummary).toList();
+        return contests.stream().map(contest -> toSummary(contest, userId)).toList();
     }
 
     public ContestDetailResponse detail(String contestId, String userId) {
         Contest contest = getContest(contestId);
         boolean submitted = submissionRepository.findByContestIdAndUserId(contestId, userId).isPresent();
+        boolean registered = registrationRepository.existsByContestIdAndUserId(contestId, userId);
         List<ContestQuestionResponse> questions = isLive(contest)
                 ? getContestQuestions(contest).stream().map(this::toContestQuestion).toList()
                 : List.of();
@@ -60,7 +64,31 @@ public class ContestService {
                 status(contest),
                 System.currentTimeMillis(),
                 submitted,
+                registered,
+                registrationRepository.countByContestId(contestId),
                 questions
+        );
+    }
+
+    public ContestRegistrationResponse register(String contestId, String userId) {
+        Contest contest = getContest(contestId);
+
+        if ("PAST".equals(status(contest))) {
+            throw new IllegalArgumentException("Registration is closed for this contest");
+        }
+
+        if (!registrationRepository.existsByContestIdAndUserId(contestId, userId)) {
+            ContestRegistration registration = new ContestRegistration();
+            registration.setContestId(contestId);
+            registration.setUserId(userId);
+            registrationRepository.save(registration);
+        }
+
+        return new ContestRegistrationResponse(
+                contestId,
+                true,
+                registrationRepository.countByContestId(contestId),
+                "Contest registered successfully"
         );
     }
 
@@ -165,7 +193,7 @@ public class ContestService {
         return questionRepository.findByContestId(contest.getId()).size();
     }
 
-    private ContestSummaryResponse toSummary(Contest contest) {
+    private ContestSummaryResponse toSummary(Contest contest, String userId) {
         return new ContestSummaryResponse(
                 contest.getId(),
                 contest.getTitle(),
@@ -174,7 +202,9 @@ public class ContestService {
                 contest.getEndTime(),
                 contest.getDurationMinutes(),
                 getQuestionCount(contest),
-                status(contest)
+                status(contest),
+                userId != null && registrationRepository.existsByContestIdAndUserId(contest.getId(), userId),
+                registrationRepository.countByContestId(contest.getId())
         );
     }
 
